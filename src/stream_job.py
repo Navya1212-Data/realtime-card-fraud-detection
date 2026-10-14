@@ -91,6 +91,7 @@ def process_batch(raw, batch_id):
     )
 
     n_new = new.count()  # Materialise before the history table changes
+    newest =new.agg(F.max("event_time")).first()[0] if n_new else None
 
     n_alerts = 0
 
@@ -124,7 +125,6 @@ def process_batch(raw, batch_id):
             batch_id,
         )
 
-        newest = new.agg(F.max("event_time")).first()[0]
         cutoff = newest - timedelta(hours=HISTORY_HOURS)
 
         DeltaTable.forPath(spark, HISTORY).delete(
